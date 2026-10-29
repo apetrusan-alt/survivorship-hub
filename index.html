@@ -1,0 +1,698 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Survivorship HUB</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=Newsreader:opsz,wght@6..72,500;6..72,600&display=swap">
+<style>
+/* Layout: a clinical pathway map. Six stations on one rail, continuous bands beneath them, detail opens in a side sheet. */
+:root{
+  --bg:#f2f6f6; --surface:#ffffff; --surface-2:#e9f0f0; --ink:#13272c; --muted:#566e74; --line:#d2dfe1;
+  --accent:#0c6b66; --accent-soft:#dcefed; --on-accent:#ffffff;
+  --d-nav:#0c6b66; --d-nut:#3b7b39; --d-pa:#647a14; --d-ces:#8a6912; --ph-a:#1f4e8c; --ph-e:#6a3d8f; --d-sup:#3b7b39; --d-late:#a03a4b; --d-tert:#8a6912; --d-psy:#5053a6; --d-soc:#1d6c98; --d-gen:#5f6f73;
+  --scrim:rgba(9,22,25,.46); --shadow:0 18px 50px rgba(12,40,44,.18);
+  --f-display:"Newsreader",Georgia,"Times New Roman",serif;
+  --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0d1719; --surface:#142326; --surface-2:#1a2d31; --ink:#e2eeef; --muted:#92aab0; --line:#2a4045;
+  --accent:#3fb3a9; --accent-soft:#18393a; --on-accent:#08201f;
+  --d-nav:#3fb3a9; --d-nut:#7cc279; --d-pa:#b5cc5a; --d-ces:#d6b24c; --ph-a:#86aeea; --ph-e:#c4a0e6; --d-sup:#7cc279; --d-late:#e37b8c; --d-tert:#d6b24c; --d-psy:#a0a2f2; --d-soc:#6bb5e0; --d-gen:#9fb0b4;
+  --scrim:rgba(0,0,0,.6); --shadow:0 18px 50px rgba(0,0,0,.5); color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#0d1719; --surface:#142326; --surface-2:#1a2d31; --ink:#e2eeef; --muted:#92aab0; --line:#2a4045;
+  --accent:#3fb3a9; --accent-soft:#18393a; --on-accent:#08201f;
+  --d-nav:#3fb3a9; --d-nut:#7cc279; --d-pa:#b5cc5a; --d-ces:#d6b24c; --ph-a:#86aeea; --ph-e:#c4a0e6; --d-sup:#7cc279; --d-late:#e37b8c; --d-tert:#d6b24c; --d-psy:#a0a2f2; --d-soc:#6bb5e0; --d-gen:#9fb0b4;
+  --scrim:rgba(0,0,0,.6); --shadow:0 18px 50px rgba(0,0,0,.5); color-scheme:dark }
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.55}
+.wrap{max-width:1260px;margin:0 auto;padding-inline:20px}
+h1,h2,h3{text-wrap:balance}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* Header */
+.top{padding-block:36px 8px}
+.eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+h1{font-family:var(--f-display);font-weight:600;font-size:clamp(32px,4.4vw,48px);line-height:1.08;margin:.3em 0 .25em;letter-spacing:-.01em}
+.lede{max-width:68ch;color:var(--muted);margin:0;font-size:16px}
+.lede strong{color:var(--ink);font-weight:600}
+.tabs{display:inline-flex;flex-wrap:wrap;gap:4px;margin-top:22px;padding:4px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+.tab{border:0;background:transparent;padding:8px 16px;border-radius:7px;cursor:pointer;font-weight:500;color:var(--muted)}
+.tab[aria-selected="true"]{background:var(--ink);color:var(--bg)}
+.tab:hover:not([aria-selected="true"]){background:var(--surface-2);color:var(--ink)}
+
+main{padding-block:22px 48px}
+.view-intro{max-width:78ch;color:var(--muted);margin:0 0 18px}
+.view-intro strong{color:var(--ink)}
+
+/* Pathway map */
+.map-scroll{overflow-x:auto;padding-bottom:6px}
+.map{display:grid;grid-template-columns:168px repeat(6,minmax(132px,1fr));column-gap:8px;row-gap:8px;min-width:1000px}
+.rail{grid-column:2 / -1;position:relative;height:18px;display:grid;grid-template-columns:repeat(6,1fr);column-gap:8px}
+.rail::before{content:"";position:absolute;left:calc(100%/12);right:calc(100%/12);top:8px;height:2px;background:var(--accent)}
+.rail span{justify-self:center;width:14px;height:14px;border-radius:50%;background:var(--surface);border:2px solid var(--accent);position:relative;z-index:1;margin-top:2px}
+.rail span.crit{background:var(--accent)}
+.corner{font-family:var(--f-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);align-self:end;padding-bottom:6px}
+.station{position:relative;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 12px 14px;cursor:pointer;display:flex;flex-direction:column;gap:6px;transition:border-color .15s,box-shadow .15s,transform .15s}
+.station:hover{border-color:var(--accent);box-shadow:0 6px 18px rgba(12,60,64,.10);transform:translateY(-1px)}
+.station .num{font-family:var(--f-mono);font-size:12px;color:var(--accent);font-weight:500}
+.station .nm{font-family:var(--f-display);font-weight:600;font-size:19px;line-height:1.15}
+.station .tm{font-size:12px;color:var(--muted)}
+.station .q{font-size:12.5px;font-style:italic;color:var(--ink);border-top:1px dashed var(--line);padding-top:8px;margin-top:auto}
+.station .open{font-size:12px;font-weight:600;color:var(--accent)}
+.station.crit{border:2px solid var(--ink)}
+.flag{position:absolute;top:-10px;right:8px;white-space:nowrap;letter-spacing:.02em!important;font-size:9.5px!important;background:var(--ink);color:var(--bg);font-family:var(--f-mono);font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;padding:2px 7px;border-radius:4px}
+.phase{border-radius:8px;padding:8px 12px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.phase b{font-size:13.5px;letter-spacing:.01em}
+.phase small{font-size:11.5px;color:var(--muted);line-height:1.35}
+.ph-a{background:color-mix(in srgb,var(--ph-a) 13%,var(--surface));color:var(--ph-a)}
+.ph-e{background:color-mix(in srgb,var(--ph-e) 13%,var(--surface));color:var(--ph-e)}
+.ph-b{background:linear-gradient(90deg,color-mix(in srgb,var(--ph-a) 13%,var(--surface)),color-mix(in srgb,var(--ph-e) 13%,var(--surface)));color:var(--ink)}
+.phchip{display:inline-block;margin-top:6px;font-size:12px;font-weight:600;padding:3px 9px;border-radius:999px}
+.dt thead tr.phr th{padding:7px 10px;font-size:12px;text-align:center}
+.blabel{padding:8px 4px 8px 0;display:flex;flex-direction:column;justify-content:center}
+.blabel b{font-size:13px;font-weight:600;display:flex;align-items:center;gap:7px}
+.blabel b i{width:10px;height:10px;border-radius:2px;background:var(--bc);flex:none}
+.blabel small{font-size:11.5px;color:var(--muted)}
+.seg{--bc:var(--accent);background:color-mix(in srgb,var(--bc) 13%,var(--surface));border-top:3px solid var(--bc);padding:8px 9px;font-size:12.5px;line-height:1.35;border-radius:3px;min-width:0}
+.seg.crit{background:color-mix(in srgb,var(--bc) 24%,var(--surface))}
+.b-nav{--bc:var(--d-nav)} .b-risk{--bc:var(--d-late)} .b-plan{--bc:var(--d-psy)} .b-gp{--bc:var(--d-soc)} .b-peer{--bc:var(--d-nut)}
+.below{display:flex;flex-wrap:wrap;gap:12px 28px;align-items:flex-start;justify-content:space-between;margin-top:18px}
+.loop{display:flex;gap:10px;align-items:flex-start;max-width:62ch;font-size:13.5px;color:var(--muted)}
+.loop svg{flex:none;margin-top:2px}
+.loop b{color:var(--ink)}
+.legend{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;font-size:12.5px;color:var(--muted)}
+.legend .lg{display:inline-flex;align-items:center;gap:6px}
+
+/* Tags */
+.tag{display:inline-block;font-family:var(--f-mono);font-size:10.5px;line-height:1;padding:3px 5px;border-radius:4px;border:1px solid var(--line);color:var(--muted);white-space:nowrap;vertical-align:1px;margin-left:3px;cursor:help}
+.tag.t-task{border-color:var(--accent);color:var(--accent)}
+.tag.t-jane{border-color:var(--d-psy);color:var(--d-psy)}
+.tag.t-twg{border-color:var(--ink);color:var(--ink)}
+.tag.t-lit{border-style:dashed}
+.tag.t-meet{border-style:dotted;color:var(--muted)}
+.prop{display:inline-block;font-family:var(--f-mono);font-size:10px;letter-spacing:.04em;text-transform:uppercase;color:var(--d-tert);border:1px solid var(--d-tert);border-radius:4px;padding:2px 4px;margin-left:4px;vertical-align:1px}
+
+/* Domains view */
+.dtable-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+table.dt{border-collapse:separate;border-spacing:0;width:100%;min-width:1080px;font-size:13px}
+.dt th,.dt td{padding:10px 10px;border-bottom:1px solid var(--line);vertical-align:top;text-align:left}
+.dt thead th{background:var(--surface-2);font-weight:600;font-size:12.5px}
+.dt thead th button{border:0;background:none;padding:0;cursor:pointer;text-align:left;font-weight:600;color:var(--ink);display:flex;flex-direction:column;gap:2px}
+.dt thead th button span{font-family:var(--f-mono);font-size:11px;color:var(--accent);font-weight:500}
+.dt thead th button:hover{color:var(--accent)}
+.dt thead th.crit{box-shadow:inset 0 -3px 0 var(--ink)}
+.dt tbody th{width:190px;border-left:5px solid var(--dc);background:var(--surface)}
+.dt tbody th b{display:block;font-size:13.5px}
+.dt tbody th small{color:var(--muted);font-weight:400;font-size:11.5px}
+.dt tbody tr:last-child th,.dt tbody tr:last-child td{border-bottom:0}
+.dt tbody tr.hl td{background:color-mix(in srgb,var(--dc) 9%,var(--surface))}
+.dt td.crit{background:color-mix(in srgb,var(--ink) 4%,var(--surface))}
+.note{margin-top:14px;font-size:13.5px;color:var(--muted);max-width:90ch}
+.note b{color:var(--ink)}
+
+/* Why view */
+.why-lead{font-family:var(--f-display);font-size:clamp(22px,2.6vw,28px);line-height:1.25;max-width:40ch;margin:0 0 22px;font-weight:500}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px 18px;min-width:0}
+.card h3{font-size:16.5px;margin:0 0 8px;line-height:1.3}
+.card p{margin:0 0 10px;font-size:14px;color:var(--muted)}
+.card p strong{color:var(--ink)}
+.split{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:14px;margin-top:14px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px 20px}
+.panel h3{margin:0 0 10px;font-size:16.5px}
+.panel ul{margin:0;padding-left:18px}
+.panel li{margin:6px 0;font-size:14px}
+.panel p{margin:0 0 8px;font-size:14px}
+.panel.gov{background:var(--accent-soft);border-color:transparent}
+@media (max-width:820px){.split{grid-template-columns:1fr}}
+
+/* References */
+details.refs{margin-top:34px;border-top:1px solid var(--line);padding-top:14px}
+details.refs summary{cursor:pointer;font-weight:600}
+.refgrp h4{font-size:12px;font-family:var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:18px 0 6px;font-weight:500}
+.refgrp ol{margin:0;padding-left:20px;font-size:13px;color:var(--muted)}
+.refgrp li{margin:4px 0}
+.refgrp li b{color:var(--ink);font-weight:600;font-family:var(--f-mono);font-size:11.5px}
+.gloss{font-size:12.5px;color:var(--muted);margin:26px 0 0;max-width:110ch}
+.gloss b{color:var(--ink)}
+footer{font-size:12px;color:var(--muted);padding-block:18px 30px;border-top:1px solid var(--line)}
+
+/* Drawer */
+.scrim{position:fixed;inset:0;background:var(--scrim);z-index:20}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(780px,100vw);background:var(--surface);z-index:21;box-shadow:var(--shadow);display:flex;flex-direction:column;animation:slide .22s ease-out}
+@keyframes slide{from{transform:translateX(24px);opacity:.4}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){.drawer{animation:none}.station{transition:none}}
+.dhead{padding:calc(16px + env(safe-area-inset-top,0px)) 22px 14px;border-bottom:1px solid var(--line);background:var(--surface)}
+.dnav{display:flex;align-items:center;gap:8px;justify-content:space-between;margin-bottom:10px}
+.pips{display:flex;gap:5px}
+.pip{width:26px;height:26px;border-radius:50%;border:1px solid var(--line);background:var(--surface);font-family:var(--f-mono);font-size:11.5px;cursor:pointer;display:grid;place-items:center;padding:0}
+.pip[aria-current="step"]{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.pip.crit{border:2px solid var(--ink)}
+.navbtns{display:flex;gap:6px}
+.ib{border:1px solid var(--line);background:var(--surface);border-radius:7px;padding:6px 10px;cursor:pointer;font-size:13px}
+.ib:hover{border-color:var(--accent);color:var(--accent)}
+.ib:disabled{opacity:.4;cursor:default}
+.dhead .num{font-family:var(--f-mono);font-size:12px;color:var(--accent)}
+.dhead h2{font-family:var(--f-display);font-weight:600;font-size:28px;margin:2px 0 2px;line-height:1.1}
+.dhead .tm{font-size:13px;color:var(--muted)}
+.dbody{overflow-y:auto;padding:18px 22px calc(28px + env(safe-area-inset-bottom,0px));flex:1}
+.kq{font-family:var(--f-display);font-size:20px;line-height:1.3;margin:0 0 10px;font-weight:500}
+.purpose{margin:0 0 6px;color:var(--muted);max-width:70ch}
+.dsec{margin-top:22px}
+.dsec > h3{font-family:var(--f-mono);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:500;margin:0 0 10px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+.tbl-wrap{overflow-x:auto}
+table.st{border-collapse:collapse;width:100%;min-width:600px;font-size:13.2px}
+.st th{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:500;text-align:left;padding:6px 8px;border-bottom:1px solid var(--line)}
+.st td{padding:8px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+.st td.dom{width:128px;font-size:12px;font-weight:600;line-height:1.3}
+.st td.dom i{display:inline-block;width:9px;height:9px;border-radius:2px;background:var(--dc);margin-right:6px;vertical-align:0}
+.thr{font-family:var(--f-mono);font-size:12px;background:var(--surface-2);padding:2px 5px;border-radius:4px;line-height:1.7}
+.agrp{display:grid;grid-template-columns:170px minmax(0,1fr);gap:4px 14px;padding:9px 0;border-bottom:1px solid var(--line)}
+.agrp:last-child{border-bottom:0}
+.agrp .dn{font-size:12.5px;font-weight:600;display:flex;gap:7px;align-items:flex-start}
+.agrp .dn i{width:9px;height:9px;border-radius:2px;background:var(--dc);flex:none;margin-top:5px}
+.agrp ul{margin:0;padding-left:16px;font-size:14px}
+.agrp li{margin:3px 0}
+@media (max-width:560px){.agrp{grid-template-columns:1fr}}
+.people{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+.people h4{margin:0 0 6px;font-size:13px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:12.5px;border:1px solid var(--line);border-radius:999px;padding:3px 10px;background:var(--surface)}
+.chip.core{background:var(--accent-soft);border-color:transparent}
+.handover{display:flex;gap:12px;align-items:flex-start;background:var(--surface-2);border-radius:10px;padding:12px 14px;font-size:14px}
+.handover svg{flex:none;margin-top:3px;color:var(--accent)}
+.handover b{display:block;font-size:12.5px;color:var(--muted);font-weight:500;margin-bottom:2px}
+table.risk{border-collapse:collapse;width:100%;min-width:620px;font-size:13px}
+.risk th,.risk td{border:1px solid var(--line);padding:8px 9px;vertical-align:top;text-align:left}
+.risk th{background:var(--surface-2);font-size:11.5px;text-transform:uppercase;letter-spacing:.04em;font-weight:500;color:var(--muted)}
+.risk td.lvl{font-family:var(--f-mono);font-weight:500;white-space:nowrap}
+.caveat{font-size:13px;color:var(--muted);margin:8px 0 0}
+.pscp{columns:2 260px;column-gap:24px;margin:0;padding-left:18px;font-size:13.5px}
+.pscp li{margin:0 0 6px;break-inside:avoid}
+details.example{border:1px solid var(--line);border-radius:10px;padding:10px 14px;background:var(--surface)}
+details.example summary{cursor:pointer;font-weight:600;font-size:14px}
+details.example ul{margin:10px 0 2px;padding-left:18px;font-size:13.5px}
+details.example li{margin:4px 0}
+.srcs{margin:0;padding-left:18px;font-size:12.5px;color:var(--muted)}
+.srcs li{margin:3px 0}
+.ib{white-space:nowrap}
+@media (max-width:600px){
+  .dnav{flex-wrap:wrap}
+  table.st,table.risk{min-width:0}
+  .st thead,.risk thead{display:none}
+  .st tbody,.st tr,.st td,.risk tbody,.risk tr,.risk td{display:block;width:100%}
+  .st tr{padding:10px 0;border-bottom:1px solid var(--line)}
+  .st td{border:0;padding:3px 0}
+  .st td.dom{width:auto}
+  .risk tr{border:1px solid var(--line);border-radius:8px;margin-bottom:8px;padding:8px 10px}
+  .risk td{border:0;padding:3px 0}
+  .risk td[data-l]::before,.st td[data-l]::before{content:attr(data-l);display:block;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+}
+</style>
+
+<header class="top wrap">
+  <div class="eyebrow">EUnetCCC · WP8 · Task 8.2.7 Survivorship</div>
+  <h1>The Survivorship HUB</h1>
+  <p class="lede">One navigator-coordinated pathway from <strong>diagnosis through the balance of life</strong>, across acute and extended/permanent survivorship. Select a step to see what is screened, what is decided, who is needed and what passes to the next step.</p>
+  <div class="tabs" role="tablist" aria-label="Views">
+    <button class="tab" role="tab" id="tab-pathway" aria-controls="view-pathway" aria-selected="true">Pathway</button>
+    <button class="tab" role="tab" id="tab-domains" aria-controls="view-domains" aria-selected="false">Domains × steps</button>
+    <button class="tab" role="tab" id="tab-why" aria-controls="view-why" aria-selected="false">Why one HUB</button>
+  </div>
+</header>
+
+<main class="wrap">
+  <section id="view-pathway" role="tabpanel" aria-labelledby="tab-pathway">
+    <div class="map-scroll"><div class="map" id="map"></div></div>
+    <div class="below">
+      <div class="loop">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><path fill="none" d="M3 3v5h5"/></svg>
+        <span><b>Re-entry is built in.</b> Recurrence or a new primary sends the person back to Steps 1–2 with acute re-screening. Changed needs or risk at any time send them back to Step 5 reassessment.</span>
+      </div>
+      <div class="legend" id="legend"></div>
+    </div>
+  </section>
+
+  <section id="view-domains" role="tabpanel" aria-labelledby="tab-domains" hidden>
+    <p class="view-intro"><strong>Every domain is active at every step.</strong> Each row is a domain owned by a thematic working group; each cell shows where the HUB currently places that content, including proposals the TWG has not yet reviewed. Select a step heading to open its detail.</p>
+    <div class="dtable-wrap"><table class="dt" id="dtable"></table></div>
+    <p class="note"><b>Comorbidities and medical follow-up (TWG 1)</b> has work at every step: its baselines are taken at intake and at the MDT, before any treatment is given, and it leads the treatment summary and risk stratification at the transition point.</p>
+  </section>
+
+  <section id="view-why" role="tabpanel" aria-labelledby="tab-why" hidden>
+    <p class="why-lead">Survivorship care is most at risk at handovers. The HUB keeps one coordinator, one risk profile and one care plan across the whole journey.</p>
+    <div class="cards" id="cards"></div>
+    <div class="split">
+      <div class="panel">
+        <h3>What one continuous HUB keeps at the end of treatment</h3>
+        <p>Different teams lead at different steps: the treating team in Steps 2–3, then the Survivorship Board and, for high-risk survivors, a specialist long-term follow-up team from Step 4. The HUB keeps them in one pathway, with one file, one navigator and one risk profile.</p>
+        <ul>
+          <li>The baselines taken, or proposed, at intake and at the MDT: cardiac function, bone density, fertility, nutrition, physical function, distress, cognition.</li>
+          <li>The treatment exposure record (agents, cumulative doses, RT fields, complications) that late-effect risk and the care plan depend on.</li>
+          <li>The named navigator, at the moment patients describe losing their safety net.</li>
+          <li>A single risk and needs profile, updated rather than rebuilt.</li>
+          <li>Supportive care already under way: prehabilitation, rehabilitation, psycho-oncology, return-to-work planning.</li>
+        </ul>
+      </div>
+      <div class="panel gov">
+        <h3>How the TWGs plug in</h3>
+        <p>The HUB is the shared pathway of Task 8.2.7, documented in IF-SurvHub. Each thematic working group owns the content of its domain and reviews how it is placed in the HUB: at which step, by whom and with which output.</p>
+        <p>The two survivorship phases map onto the HUB: acute survivorship, from primary diagnosis through active treatment, covers Steps 1–3; the end-of-treatment assessment at Step 4 closes it and opens extended and permanent survivorship, Steps 5–6, where JANE-2 risk-stratified follow-up is implemented. TWG 1 risk groups set follow-up at Step 4, and the Hamburg “Life After Cancer” model (navigator, core team, Survivorship Board, care plan and handbook) follows the same logic.</p>
+        <p>TWG 4 (Nutrition, Physical Activity and Health Behaviours) spans treatment and prevention: malnutrition, cachexia, prehabilitation and rehabilitation are part of cancer care, while healthy eating, regular activity and stopping nicotine and alcohol support long-term health and lower the risk of comorbidities.</p>
+        <p>Overlap between TWG activities and HUB steps is expected: activities are the building blocks the HUB coordinates.</p>
+      </div>
+    </div>
+  </section>
+
+  <p class="gloss"><b>Abbreviations.</b> AI aromatase inhibitor · AYA adolescents and young adults · CCC comprehensive cancer centre · CIPN chemotherapy-induced peripheral neuropathy · DT Distress Thermometer · DXA dual-energy X-ray absorptiometry · ERAS enhanced recovery after surgery · GI gastrointestinal · GP general practitioner · HSCT haematopoietic stem cell transplantation · LTFU long-term follow-up · MDT multidisciplinary team · PROM patient-reported outcome measure · RT radiotherapy.</p>
+
+  <details class="refs" id="refs">
+    <summary>Sources used on this page</summary>
+    <div id="reflist"></div>
+  </details>
+</main>
+
+<div class="wrap" style="margin-top:28px;margin-bottom:8px"><section aria-label="Contact" style="padding:18px 20px;border:1px solid var(--line);border-radius:14px;background:var(--surface)">
+  <div style="font-family:var(--f-display);font-size:1.25rem;font-weight:600;color:var(--ink);margin-bottom:6px">Want to implement a step of the HUB in your centre?</div>
+  <div style="color:var(--muted);margin-bottom:10px">Pick any step and tell us. We connect you with partners who already run it.</div>
+  <div style="display:flex;flex-wrap:wrap;gap:8px 24px">
+    <a href="mailto:apetrusan@gmail.com" style="color:var(--accent);font-weight:600;text-decoration:none">Alexandru Petrușan · apetrusan@gmail.com</a>
+    <a href="mailto:anamariasuciu1994@gmail.com" style="color:var(--accent);font-weight:600;text-decoration:none">Ana Maria Suciu · anamariasuciu1994@gmail.com</a>
+  </div>
+</section></div>
+
+<footer class="wrap">Working material for EUnetCCC Task 8.2.7, built from IF-SurvHub v2 and the Brussels teaming (17–18 September 2026). Items tagged with a TWG come from that TWG’s own material. Items marked <span class="prop" style="margin:0">proposed</span> were placed at this step by this overview (from guidelines, JANE-2 or by analogy with TWG material) and are open for review by the TWG that owns the domain, or by the task team for cross-cutting items.</footer>
+
+<div class="scrim" id="scrim" hidden></div>
+<aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="dTitle" hidden>
+  <div class="dhead">
+    <div class="dnav">
+      <div class="pips" id="pips"></div>
+      <div class="navbtns">
+        <button class="ib" id="prev" aria-label="Previous step">← Prev</button>
+        <button class="ib" id="next" aria-label="Next step">Next →</button>
+        <button class="ib" id="close" aria-label="Close">Close ✕</button>
+      </div>
+    </div>
+    <div class="num" id="dNum"></div>
+    <h2 id="dTitle"></h2>
+    <div class="tm" id="dTime"></div>
+    <div id="dPhase"></div>
+  </div>
+  <div class="dbody" id="dBody"></div>
+</aside>
+
+<script>
+const REFS = {
+  IF:{tag:"IF",t:"task",g:"Task documents",c:"EUnetCCC Task 8.2.7. EU Cancer Survivorship Care Implementation Framework (IF-SurvHub), working document v2, 2026. Includes the mapping survey of 36 centres in 25 countries, the HUB workflow and the Maria Ionescu case demonstration."},
+  TWG3:{tag:"TWG3",t:"twg",g:"Task documents",c:"TWG 3 Social care. Minimal set of social care processes and structures in CCCs, post-Malta version, March 2026."},
+  TWG11P:{tag:"TWG4",t:"twg",g:"Task documents",c:"Exercise-based prehabilitation (evidence report and activity template) and Rehabilitation care activity template, 2026 (prepared as TWG 1.1, now TWG 4)."},
+  TWG2H:{tag:"TWG2",t:"twg",g:"Task documents",c:"Peterson M (Skåne University Hospital CCC). TWG 2 homework: ACT-based group psychological rehabilitation with integrated psycho-education, 2026."},
+  TWG11N:{tag:"TWG4",t:"twg",g:"Brussels teaming, 17–18 Sept 2026",c:"Petrușan A. Screening and assessment tools for nutritional care across the survivorship pathway. Brussels 2026 (presented as TWG 1.1, now TWG 4); and nutrition activity template."},
+  TWG11E:{tag:"TWG4",t:"twg",g:"Brussels teaming, 17–18 Sept 2026",c:"Oliva V, Kačmár P. Screening and assessment tools for exercise oncology and cancer rehabilitation. National Cancer Institute Bratislava, Brussels 2026 (now TWG 4)."},
+  TWG12:{tag:"TWG1",t:"twg",g:"Brussels teaming, 17–18 Sept 2026",c:"Sinn M, Escherich G. TWG 1.2 Medical follow-up, late effects and toxicities: update and list of activities (incl. extended list based on the proposal of K. Paapsi, Estonia; Hamburg “Life After Cancer” programme). UCC Hamburg, Brussels 2026 (presented as TWG 1.2, now TWG 1)."},
+  TWG13:{tag:"TWG4",t:"twg",g:"Brussels teaming, 17–18 Sept 2026",c:"Sampogna F. TWG 1 Tertiary prevention: smoking cessation and alcohol reduction in cancer survivors. ACC Rome, Brussels 2026 (presented as TWG 1.3, now TWG 4)."},
+  TWG2S:{tag:"TWG2",t:"twg",g:"Brussels teaming, 17–18 Sept 2026",c:"Sousa Almeida S, Amaral A. Screening for psychological needs in cancer survivors. TWG 2, Brussels 2026."},
+  PHASES:{tag:"Phases",t:"meet",g:"Task documents",c:"‘TWGs and Hub renamed’ working slides: survivorship phases (acute; extended and permanent) and topics per TWG, October 2026."},
+  JANE2RS:{tag:"JANE-2",t:"jane",g:"Brussels teaming, 17–18 Sept 2026",c:"Bertuzzi AF. Risk stratification approach to personalised survivorship care. JANE-2 Task 7.3 (ACC), Brussels 2026."},
+  JANE2CO:{tag:"JANE-2",t:"jane",g:"Brussels teaming, 17–18 Sept 2026",c:"Villanova L. Multi-disciplinary and cross-institutional coordination of survivorship care. JANE-2 Task 7.3 (ACC), Brussels 2026."},
+  CUSL:{tag:"CUSL",t:"meet",g:"Brussels teaming, 17–18 Sept 2026",c:"de Ville de Goyet M. Pediatric and AYA survivors: risk stratification, experience from CUSL (Cliniques universitaires Saint-Luc). Brussels 2026."},
+  AYA:{tag:"CUSL",t:"meet",g:"Brussels teaming, 17–18 Sept 2026",c:"Poiré X. Lost in transition: from peds to AYA to long-term. Cliniques universitaires Saint-Luc, Brussels 2026."},
+  NCCNG:{tag:"NCCN",t:"lit",g:"Guidelines and literature",c:"National Comprehensive Cancer Network. NCCN Clinical Practice Guidelines in Oncology: Survivorship, current version (nccn.org). Defines a cancer survivor from the time of diagnosis through the balance of life."},
+  NCCN25:{tag:"NCCN 2025",t:"lit",g:"Guidelines and literature",c:"Sanft T, et al. NCCN Guidelines Insights: Survivorship, Version 2.2025. J Natl Compr Canc Netw 2025;23(6):208–217."},
+  VAZ22:{tag:"ESMO 2022",t:"lit",g:"Guidelines and literature",c:"Vaz-Luis I, et al. ESMO Expert Consensus Statements on Cancer Survivorship. Ann Oncol 2022;33(11):1119–1133."},
+  LYON22:{tag:"ESC 2022",t:"lit",g:"Guidelines and literature",c:"Lyon AR, et al. 2022 ESC Guidelines on cardio-oncology. Eur Heart J 2022;43(41):4229–4361."},
+  COLE20:{tag:"ESMO 2020",t:"lit",g:"Guidelines and literature",c:"Coleman R, et al. Bone health in cancer: ESMO Clinical Practice Guidelines. Ann Oncol 2020;31(12):1650–1663."},
+  SU25:{tag:"ASCO 2025",t:"lit",g:"Guidelines and literature",c:"Su HI, et al. Fertility preservation in people with cancer: ASCO guideline update. J Clin Oncol 2025;43(12):1488–1515."},
+  DALE23:{tag:"ASCO 2023",t:"lit",g:"Guidelines and literature",c:"Dale W, et al. Practical assessment and management of vulnerabilities in older patients receiving systemic cancer therapy: ASCO guideline update. J Clin Oncol 2023;41(26):4293–4312."},
+  CAMP19:{tag:"ACSM 2019",t:"lit",g:"Guidelines and literature",c:"Campbell KL, et al. Exercise guidelines for cancer survivors: consensus statement from international multidisciplinary roundtable. Med Sci Sports Exerc 2019;51(11):2375–2390."},
+  ANDE23:{tag:"ASCO 2023",t:"lit",g:"Guidelines and literature",c:"Andersen BL, et al. Management of anxiety and depression in adult survivors of cancer: ASCO guideline update. J Clin Oncol 2023;41(18):3426–3453."},
+  GRAS23:{tag:"ESMO 2023",t:"lit",g:"Guidelines and literature",c:"Grassi L, et al. Anxiety and depression in adult cancer patients: ESMO Clinical Practice Guideline. ESMO Open 2023;8(2):101155."},
+  MAYE14:{tag:"ASCO 2014",t:"lit",g:"Guidelines and literature",c:"Mayer DK, et al. American Society of Clinical Oncology clinical expert statement on cancer survivorship care planning. J Oncol Pract 2014;10(6):345–351."},
+  JEFF22:{tag:"Lancet 2022",t:"lit",g:"Guidelines and literature",c:"Jefford M, et al. Improved models of care for cancer survivors. Lancet 2022;399(10334):1551–1560."},
+  FROB17:{tag:"BJC 2017",t:"lit",g:"Guidelines and literature",c:"Frobisher C, et al. Risk stratification of childhood cancer survivors necessary for evidence-based clinical long-term follow-up. Br J Cancer 2017;117(11):1723–1731."},
+  ESPEN21:{tag:"ESPEN 2021",t:"lit",g:"Guidelines and literature",c:"Muscaritoli M, et al. ESPEN practical guideline: clinical nutrition in cancer. Clin Nutr 2021;40(5):2898–2913."},
+  GLIM19:{tag:"GLIM 2019",t:"lit",g:"Guidelines and literature",c:"Cederholm T, et al. GLIM criteria for the diagnosis of malnutrition: a consensus report from the global clinical nutrition community. Clin Nutr 2019;38(1):1–9."},
+  ROCK22:{tag:"ACS 2022",t:"lit",g:"Guidelines and literature",c:"Rock CL, et al. American Cancer Society nutrition and physical activity guideline for cancer survivors. CA Cancer J Clin 2022;72(3):230–262."},
+  CARR24:{tag:"ESMO 2024",t:"lit",g:"Guidelines and literature",c:"Carrera PM, et al. ESMO expert consensus statements on the screening and management of financial toxicity in patients with cancer. ESMO Open 2024;9(5):102992."},
+  DESO17:{tag:"COST 2017",t:"lit",g:"Guidelines and literature",c:"de Souza JA, et al. Measuring financial toxicity as a clinically relevant patient-reported outcome: the validation of the COmprehensive Score for financial Toxicity (COST). Cancer 2017;123(3):476–484."},
+  NCI22:{tag:"NCI 2022",t:"lit",g:"Guidelines and literature",c:"National Cancer Institute. Treating Smoking in Cancer Patients: An Essential Component of Cancer Care. NCI Tobacco Control Monograph 23. Bethesda, MD: NCI; 2022."}
+};
+
+const DOM = {
+  nav:{n:"Navigation",c:"var(--d-nav)"}, gen:{n:"Cross-cutting",c:"var(--d-gen)"},
+  late:{n:"TWG 1 · Comorbidities & medical follow-up",c:"var(--d-late)"}, psy:{n:"TWG 2 · Onco-psychological care",c:"var(--d-psy)"},
+  soc:{n:"TWG 3 · Social & vocational care",c:"var(--d-soc)"}, nut:{n:"TWG 4 · Nutrition",c:"var(--d-nut)"},
+  pa:{n:"TWG 4 · Physical activity & rehabilitation",c:"var(--d-pa)"}, ces:{n:"TWG 4 · Nicotine & alcohol cessation",c:"var(--d-ces)"}
+};
+
+const PHASE = {a:"Acute survivorship", b:"Closes acute, opens extended and permanent survivorship", e:"Extended and permanent survivorship"};
+
+const STEPS = [
+{ n:1, ph:"a", name:"Navigator intake", timing:"First hospital contact, at diagnosis",
+  q:"Who is this person beyond the tumour, and what could derail the pathway?",
+  purpose:"The navigator opens the survivorship file, runs a short multimodal screen and turns the results into flags the MDT can act on. Survivorship starts here, as agreed in the task definition.",
+  screenTitle:"Screening panel",
+  screen:[
+    {d:"psy",tool:"Distress Thermometer + Problem List",thr:"DT ≥4 → second-line tool or psycho-oncology (a screen, not a diagnosis)",who:"Navigator",src:["IF","TWG2S","ANDE23"]},
+    {d:"soc",tool:"Social care needs screening: financial, employment, social support, basic needs",thr:"Scores trigger automatic referral; each screen followed by a personal assessment by a health social worker or equivalent",who:"Navigator (screen), social worker or equivalent (assessment)",src:["TWG3"]},
+    {d:"soc",tool:"COST (financial toxicity)",thr:"Score documented; lower score = greater toxicity · ESMO: brief financial question first, then COST",who:"Navigator",src:["IF","DESO17","CARR24"]},
+    {d:"gen",tool:"FACT-Cog short form (cognition); EORTC QLQ-FA12 (fatigue) when indicated",thr:"Pre-treatment baseline, repeated in follow-up",who:"Navigator",src:["IF"]},
+    {d:"nut",tool:"MST, or PG-SGA SF completed by the patient",thr:"MST ≥2 → assessment · PG-SGA SF 4–8 dietitian, ≥9 critical",who:"Nurse, navigator or patient",src:["TWG11N"]},
+    {d:"pa",tool:"STEADI falls screen (3 questions); SARC-F",thr:"Any yes → gait, strength and balance assessment · SARC-F ≥4 → handgrip, then muscle mass (CT, BIA or DXA)",who:"Navigator, nurse or patient (self-report)",src:["TWG11E","TWG11N"],p:1},
+    {d:"ces",tool:"Smoking history (duration, quantity) and alcohol use",thr:"Current use → cessation support offered, flagged to the MDT",who:"Navigator",src:["TWG13","NCI22"],p:1},
+    {d:"late",tool:"Comorbidities (comorbidity score), medication plan, cardiovascular risk factors, reproductive plans, family history, age",thr:"Flags for cardio-oncology, fertility, genetics · age ≥65 → geriatric assessment before the treatment decision",who:"Navigator, nurse",src:["PHASES","LYON22","SU25","DALE23"],p:1}
+  ],
+  actions:[
+    {d:"nav",items:[["Open the survivorship file, assign a named navigator, document the baseline profile",["IF"]],["Clinical trial information and eligibility check before the MDT",["IF"]]]},
+    {d:"gen",items:[["Confirm, document and notify the GP for the shared-care pathway",["IF"]],["Offer the Peer Support Programme",["IF"]],["Caregiver prevention screening and referral to the Prevention HUB (family programmes)",["IF"]]]},
+    {d:"soc",items:[["Present the centre and its social support options (brochure, patient folder, website)",["IF","TWG3"]],["Offer social counselling to the patient and family after the screen",["TWG3"]]]}
+  ],
+  core:["Trained patient navigator (nurse, psychologist or social worker)"],
+  extra:["Psycho-oncologist","Social worker","Dietitian or nutrition-trained clinician","Physiotherapist"],
+  extraLabel:"On a positive screen",
+  handover:"Baseline survivorship profile with flags: distress, cognition, fatigue, nutrition, function, social and financial need, smoking and alcohol, cardiovascular risk, fertility wish, hereditary risk, age-related vulnerability; trial eligibility.",
+  ex:["DT 6/10; worry, body image and fatigue flagged","COST 18; 45 km from the centre (transport barrier); medical leave initiated","History and staging confirmed; BRCA panel ordered (negative)","Survivorship file opened, named navigator assigned, GP notified"]
+},
+{ n:2, ph:"a", name:"MDT", timing:"Treatment decision · “Tumour Board or MDT” in IF-SurvHub v2",
+  q:"Which treatment, and what will it mean for this person’s life after treatment?",
+  purpose:"The multidisciplinary team decides treatment. The navigator presents the survivorship flags, so late-effect prevention, supportive care and fertility are decided before treatment starts, while they can still change outcomes.",
+  screenTitle:"Assessments the MDT triggers",
+  screen:[
+    {d:"late",tool:"Baseline cardiovascular toxicity risk stratification (e.g. HFA-ICOS) and echocardiography",thr:"Before potentially cardiotoxic therapy (e.g. anthracyclines, anti-HER2)",who:"Oncologist, cardio-oncology",src:["LYON22"],p:1},
+    {d:"late",tool:"Baseline bone mineral density (DXA) and clinical risk factors",thr:"Aromatase inhibitor, ovarian function suppression or androgen deprivation planned",who:"Oncologist",src:["COLE20"],p:1},
+    {d:"late",tool:"Baseline renal function and audiometry",thr:"Before nephrotoxic or ototoxic therapy (e.g. cisplatin)",who:"Oncologist",src:["PHASES"]},
+    {d:"late",tool:"Fertility counselling; referral for preservation",thr:"Reproductive age: discuss fertility risk with all; refer if gonadotoxic treatment or on request",who:"Oncologist, fertility specialist",src:["IF","SU25"]},
+    {d:"nut",tool:"Full nutritional assessment (PG-SGA) and GLIM diagnosis",thr:"Positive nutrition screen",who:"Dietitian, or trained physician where no dietitian",src:["TWG11N","GLIM19"]},
+    {d:"pa",tool:"6MWT + handgrip + one PROM (e.g. EORTC QLQ-C30 physical function); 30 s sit-to-stand, TUG; CPET where available",thr:"Surgery or treatment planned → prehabilitation level set by results · priority: lung, colorectal, upper GI, pancreatic, age ≥70, low fitness or frailty",who:"Physiotherapist, exercise professional",src:["TWG11P"]},
+    {d:"gen",tool:"Geriatric assessment",thr:"Age ≥65 when systemic therapy is considered; results inform the treatment choice",who:"Geriatrician or trained clinician",src:["DALE23"],p:1},
+    {d:"gen",tool:"Germline genetic referral",thr:"Hereditary risk suspected on history or molecular profile",who:"Genetics",src:["IF"]}
+  ],
+  actions:[
+    {d:"late",items:[["Anticipate treatment-specific late effects and open the late-effect risk profile",["IF"]],["Record planned agents, cumulative doses and RT fields, the basis of the later treatment summary",["IF","TWG12"],1]]},
+    {d:"pa",items:[["Trigger multimodal prehabilitation 2–6 weeks before surgery: aerobic and resistance training, respiratory training (inspiratory muscle training for thoracic and upper abdominal surgery), with nutrition",["TWG11P","TWG11N","TWG11E","PHASES"]]]},
+    {d:"nut",items:[["Nutrition intervention plan for patients at risk; nutrition component of prehabilitation and ERAS",["TWG11N","ESPEN21","PHASES"]]]},
+    {d:"psy",items:[["Psychosocial risks presented by the navigator",["IF"]],["Anxiety screen (GAD-7 or HADS anxiety subscale) when the treatment decision is discussed",["TWG2S"]]]},
+    {d:"soc",items:[["Social care professional takes part in the MDT for all patients (TWG 3, Level 2)",["IF","TWG3"]],["Flag return-to-work planning early",["IF"]]]},
+    {d:"ces",items:[["Build smoking cessation into the treatment plan",["TWG13","NCI22"],1]]},
+    {d:"nav",items:[["Incorporate clinical trial eligibility",["IF"]],["Link family members and caregivers to the Prevention HUB; genetic referral when hereditary risk is suspected",["IF"]]]}
+  ],
+  core:["Surgical, medical and radiation oncology","Radiology and pathology","Navigator (presents survivorship flags)","Social care professional (TWG 3, Level 2)"],
+  extra:["Dietitian","Physiotherapist or rehabilitation physician","Psycho-oncologist","Fertility specialist","Cardio-oncologist","Geriatrician","Genetics"],
+  extraLabel:"Supportive care, on indication",
+  handover:"Treatment plan together with an integrated supportive care plan (who does what during treatment); baseline tests and prehabilitation ordered; planned exposure record and late-effect risk profile opened.",
+  ex:["Plan: neoadjuvant 4×AC → 12× paclitaxel, breast-conserving surgery + SLND, adjuvant RT, endocrine therapy (tamoxifen, then planned switch to AI + GnRH agonist)","Risks flagged for survivorship: cognitive (chemotherapy), cardiotoxicity (anthracycline + left-chest RT), bone loss (AI + GnRH), return-to-work plan needed","Navigator: late-effect risk profile initiated; social worker referral"]
+},
+{ n:3, ph:"a", name:"Active treatment", timing:"During treatment, weeks to months",
+  q:"Is the person tolerating treatment, and are we preventing avoidable harm now?",
+  purpose:"Supportive care runs alongside treatment. The HUB re-screens at defined intervals, and the navigator makes sure every positive screen reaches the right professional.",
+  screenTitle:"Re-screening",
+  screen:[
+    {d:"nut",tool:"MST or PG-SGA SF",thr:"Every cycle or every 2–4 weeks; weekly during RT for head and neck and GI; symptom-driven reassessment",who:"Nurse, navigator or patient (self-report)",src:["TWG11N"]},
+    {d:"nut",tool:"Event triggers (apply at any step)",thr:"Hospital admission, new treatment line, recurrence, unintentional weight change ≥5%",who:"Any team member",src:["TWG11N"]},
+    {d:"psy",tool:"GAD-7 or HADS anxiety subscale",thr:"Before major surgery, first chemotherapy, RT start · GAD-7 ≥10, HADS ≥8 → psycho-oncology assessment",who:"Nurse, psycho-oncology",src:["TWG2S"]},
+    {d:"psy",tool:"Distress Thermometer or HADS, repeated by phase",thr:"Each new treatment phase or cycle transition; favour HADS or the non-somatic PHQ-9 items",who:"Nurse, navigator",src:["TWG2S"]},
+    {d:"pa",tool:"EXCEEDS algorithm (medical clearance, triage to an exercise setting) and red flags; if bone metastases: skeletal stability (Mirels for long bones, SINS for spine)",thr:"Before any exercise prescription · Mirels ≤7 low fracture risk · SINS 0–6 stable, 7–12 potentially unstable, 13–18 unstable",who:"Physiotherapist, exercise professional",src:["TWG11E"]},
+    {d:"pa",tool:"During RT: skin condition, fibrosis risk, range of motion, pain, fatigue, nutrition (head and neck)",thr:"Each radiotherapy course",who:"Physiotherapist, nurse",src:["TWG11E"]},
+    {d:"gen",tool:"Basic needs reassessment across all TWGs",thr:"Every 3–6 months during treatment and at disease progression",who:"Navigator",src:["PHASES"]},
+    {d:"late",tool:"On-treatment toxicity monitoring, e.g. echocardiography every 3 months on anti-HER2 therapy",thr:"Per regimen",who:"Oncologist, cardio-oncology",src:["LYON22"],p:1}
+  ],
+  actions:[
+    {d:"gen",items:[["Symptom management, coordinated through the HUB",["IF"]]]},
+    {d:"nut",items:[["Nutrition support (counselling, oral supplements, enteral or parenteral nutrition); management of GI side effects",["IF","TWG11N","PHASES"]]]},
+    {d:"pa",items:[["Supervised or home-based exercise during treatment",["TWG11P","CAMP19"]],["Promote physical activity on the wards, including exercise aimed at preventing CIPN",["PHASES"]],["Screen every hospitalised patient for physiotherapy needs",["TWG11P"]]]},
+    {d:"late",items:[["Log cumulative doses and toxicities as they occur",["IF"]]]},
+    {d:"psy",items:[["Counselling, CBT and group interventions",["IF"]]]},
+    {d:"soc",items:[["Social counselling offered to survivors and carers after screening and at any later stage; free of charge, self-referral possible",["TWG3"]],["Practical support: household, informing and caring for children, acute treatment and travel costs",["PHASES"]],["Financial navigation, sick-leave documentation, transport reimbursement, social screening follow-up; return-to-work planning starts",["IF"]],["Written information on work rights and basic vocational counselling (TWG 3 Activity 9, Level 1)",["TWG3"]]]},
+    {d:"ces",items:[["Smoking cessation and alcohol-reduction programmes, with outcomes followed at set intervals",["TWG13"],1]]},
+    {d:"nav",items:[["Continuity across all services; peer support active during treatment",["IF"]],["Prepare the survivorship care plan draft",["IF"]]]}
+  ],
+  core:["Treating oncology team","Navigator"],
+  extra:["Dietitian","Physiotherapist or exercise professional","Psycho-oncologist","Social worker","Pharmacist","Speech and language therapist (head and neck)"],
+  extraLabel:"Supportive care",
+  handover:"Complete treatment record (agents, cumulative doses, RT fields, surgery, complications), toxicity log, updated needs profile and a draft care plan.",
+  ex:["Neoadjuvant chemotherapy completed (good response); BCS + SLND, ypT1b ypN0; RT 50 + 10 Gy; tamoxifen started","DT re-screened ×3; 4 psycho-oncology sessions","Transport reimbursement activated; sick-leave documentation managed; exercise counselling started","Navigator tracks cumulative toxicity, coordinates referrals, prepares the care plan draft"]
+},
+{ n:4, ph:"b", name:"Transition point", timing:"End of primary treatment · Survivorship Board", crit:true,
+  q:"What does this person need now, how much risk do they carry, and who leads care from here?",
+  purpose:"The Survivorship Board turns everything collected since diagnosis into a personalised survivorship care plan and a risk level. TWG 2 calls end of treatment the most under-screened moment, only 42% of surveyed centres schedule care plans, and this step depends most on data gathered in Steps 1 to 3. For survivors on long-term endocrine, maintenance or continuous therapy, the Board meets at the end of primary treatment and the plan covers the ongoing therapy.",
+  screenTitle:"Full reassessment",
+  screen:[
+    {d:"psy",tool:"DT + HADS or PHQ-9/GAD-7 + FCRI-SF",thr:"DT ≥4 · HADS ≥8 per subscale · PHQ-9 or GAD-7 ≥10 · FCRI-SF ≥13/36 → clinical assessment (a positive screen is not a diagnosis)",who:"Psycho-oncology, navigator",src:["TWG2S","ANDE23","GRAS23"]},
+    {d:"nut",tool:"Full nutritional reassessment; GLIM if at risk",thr:"Document status and re-screening date in the plan",who:"Dietitian (trained physician where no dietitian)",src:["TWG11N"]},
+    {d:"pa",tool:"6MWT, handgrip, sit-to-stand; fatigue (QLQ-FA12 as at baseline, or FACIT-Fatigue)",thr:"Every survivor assessed for rehabilitation need → referral",who:"Physiotherapist or rehabilitation physician",src:["TWG11P","TWG3"]},
+    {d:"soc",tool:"Follow-up social needs screening; work ability",thr:"Return-to-work or vocational plan",who:"Social worker",src:["IF","TWG3"]},
+    {d:"late",tool:"Therapy-specific late-effect screening",thr:"Driven by the treatment exposure record",who:"Oncologist, late-effects specialist",src:["IF","TWG12"]},
+    {d:"gen",tool:"Sexual health, menopausal or androgen-deprivation symptoms, fertility status and pregnancy timing",thr:"Concern → sexual health or fertility referral",who:"Oncologist, nurse",src:["IF"],p:1}
+  ],
+  risk:true, pscp:true,
+  actions:[
+    {d:"nav",items:[["Coordinate the Survivorship Board (chaired by the treating oncologist); deliver the care plan and a pocket guide to the patient and the GP",["IF","TWG12"]]]},
+    {d:"late",items:[["Assign the risk level at the Survivorship Board, using the TWG 1 medical risk groups",["IF","TWG12","JANE2RS"]]]},
+    {d:"soc",items:[["Assess every survivor for medical rehabilitation need, inform all and support access where needed",["IF","TWG3"]]]},
+    {d:"gen",items:[["Primary care handover: named GP, shared-care responsibilities, re-entry criteria",["IF","JANE2CO"]],["Paediatric-onset and AYA survivors: survivorship passport for every survivor; transition to adult care planned from the end of therapy and done when ready (readiness assessment, e.g. TRAQ, usually from age 16), joint “warm hand-over” consultation, named coordinator, check that the transfer is completed",["AYA","CUSL","TWG12"],1]]}
+  ],
+  core:["Navigator","Treating oncologist (chair)","GP / primary care","Psycho-oncologist","Social worker"],
+  extra:["Rehabilitation physician","Fertility specialist","Pain / palliative care","Sexual health","Physiotherapy","Genetics liaison","Dietitian (proposed)","Late-effects specialist (proposed)"],
+  extraLabel:"As needed",
+  handover:"Care plan issued to patient and GP; risk level with follow-up setting and care lead; named coordinator; red flags and re-entry criteria.",
+  ex:["Treatment summary finalised; six late effects mapped with monitoring (cardiotoxicity, bone health, cognitive impairment, chronic fatigue, menopausal symptoms, lymphoedema)","Follow-up calendar: every 3 months → every 6 months → annual","CBT referral for fear of recurrence; sexual health counselling","Return to work 50% → 75% → 100%; COST re-screen at 3 and 6 months; nutrition and exercise prescription","Risk category: medium (IF-SurvHub scale: low, medium, high). Plan delivered to patient, navigator file and GP"]
+},
+{ n:5, ph:"e", name:"Follow-up", timing:"Years 1–5 after primary treatment, by risk level",
+  q:"Is the plan still right for this person?",
+  purpose:"Follow-up covers disease surveillance and survivorship monitoring together. Intensity, setting and care lead follow the risk level, and the plan is updated whenever reassessment changes the picture.",
+  screenTitle:"Reassessment",
+  screen:[
+    {d:"psy",tool:"Distress Thermometer at check-in, before results are given",thr:"DT ≥4; catches anticipatory “scanxiety”",who:"Nurse, navigator",src:["TWG2S","IF"]},
+    {d:"psy",tool:"FCRI-SF, Body Image Scale, SCNS-SF34",thr:"Annual survivorship visit",who:"Psycho-oncology",src:["TWG2S"]},
+    {d:"gen",tool:"EORTC QLQ-SURV100 at the first post-treatment follow-up visit, then periodically; remote PROMs and telehealth",thr:"First follow-up visit, then per care plan",who:"Navigator",src:["IF"]},
+    {d:"gen",tool:"FACT-Cog and EORTC QLQ-FA12, compared with the intake baseline",thr:"Persistent cognitive complaints → neuropsychological assessment",who:"Navigator",src:["IF"]},
+    {d:"nut",tool:"Nutrition re-screen for undernutrition (MST or PG-SGA SF) and overnutrition (BMI); body composition where available",thr:"Every visit, at least annually",who:"Nurse, dietitian",src:["TWG11N"]},
+    {d:"pa",tool:"Self-reported physical activity and functional deficits (PROMs)",thr:"Deficit → physiotherapy referral",who:"Patient, nurse",src:["TWG11P"]},
+    {d:"soc",tool:"Social care follow-up screening",thr:"Changes tracked, navigation adapted",who:"Social worker",src:["IF","TWG3"]},
+    {d:"late",tool:"Risk-based surveillance for late effects, recurrence and second primaries; cardiovascular risk factors (blood pressure, lipids, glucose, weight)",thr:"Per risk level and care plan triggers; cardiovascular risk at least annually",who:"Oncologist or GP by risk level",src:["IF","TWG12","PHASES"]},
+    {d:"psy",tool:"Recurrence or new primary: repeat baseline tools + PCL-5 / PC-PTSD-5",thr:"PC-PTSD-5 ≥3 · PCL-5 around 31–33 (cancer-specific cut-offs still being refined) · re-entry to Steps 1–2",who:"Psycho-oncology",src:["TWG2S"]}
+  ],
+  actions:[
+    {d:"late",items:[["Minimum medical follow-up packages per risk group, PROs and EORTC SURV100 in follow-up, and quality indicators: activities TWG 1 plans to develop",["TWG12"]]]},
+    {d:"nut",items:[["Persisting GI side effects; healthy eating and weight management",["TWG11N","PHASES"]]]},
+    {d:"pa",items:[["Rehabilitation programme with referral by need and regular re-evaluation, including persisting CIPN, fatigue and surgery-related effects",["TWG11P","PHASES"]]]},
+    {d:"psy",items:[["Support for coping with the end of treatment and the way back to normal",["PHASES"]],["Example: ACT-based group rehabilitation with integrated psycho-education for adults after cancer, typically 6–8 sessions (Skåne)",["TWG2H"]]]},
+    {d:"ces",items:[["Smoking and alcohol status reviewed at follow-up visits; relapse → cessation support; programmes started where needed",["TWG13","NCI22","PHASES"],1]]},
+    {d:"soc",items:[["Individual vocational assessment, return-to-work plan, regular reviews, employer contact with consent, retraining where needed (TWG 3 Activity 9, Level 2; e.g. OREH pilot, Institute of Oncology Ljubljana)",["TWG3","PHASES"]]]},
+    {d:"nav",items:[["Coordinate CCC and GP; re-entry triage on red flags; re-screen for trials",["IF"]],["Re-stratify risk at each reassessment",["JANE2RS","JANE2CO"]]]}
+  ],
+  core:["Navigator / coordinator","Care lead set by risk level: specialist LTFU team with GP co-management (high), oncologist and designated GP (intermediate), GP supported by specialised oncology nursing (low)"],
+  extra:["Dietitian","Physiotherapist","Psycho-oncologist","Social worker","Vocational counsellor"],
+  extraLabel:"On referral",
+  handover:"Adapted care plan, confirmed care lead and a long-term surveillance plan.",
+  ex:["CCC-led: annual mammography + MRI, echocardiography every 12 months, endocrine therapy management, SURV100 + DT at each visit","Shared with GP: DXA every 2 years, cardiovascular risk (lipids, blood pressure), work reintegration monitoring, mental health check-ins","Navigator coordinates CCC and GP; re-entry triage on red flags"]
+},
+{ n:6, ph:"e", name:"Balance of life", timing:"From year 5 after primary treatment, lifelong",
+  q:"How do we keep this person healthy, working and connected, with no more hospital care than needed?",
+  purpose:"Care shifts to primary care for most survivors. Specialist long-term follow-up stays in place for high-risk groups, and the re-entry pathway stays open.",
+  screenTitle:"Ongoing checks",
+  screen:[
+    {d:"late",tool:"Lifelong surveillance after high-risk exposures (e.g. mediastinal or cranial RT, HSCT, CAR-T)",thr:"Specialist LTFU with GP co-management",who:"LTFU team, GP",src:["JANE2RS","TWG12"]},
+    {d:"late",tool:"Age-appropriate cancer screening; risk-adapted second-cancer surveillance where indicated; Prevention HUB for relatives",thr:"National programmes, treatment exposures, hereditary risk",who:"GP",src:["IF","PHASES"]},
+    {d:"psy",tool:"Mental health and quality of life; FCRI-SF and Body Image Scale at annual review",thr:"Routine; referral as needed",who:"GP, psycho-oncology",src:["IF","TWG2S"]},
+    {d:"nut",tool:"Nutrition re-screening (under- and overnutrition)",thr:"At least annually",who:"GP, nurse",src:["TWG11N"]}
+  ],
+  actions:[
+    {d:"nut",items:[["Healthy eating and weight management",["IF","NCCN25","ROCK22"]]]},
+    {d:"pa",items:[["Regular physical activity",["IF","NCCN25","CAMP19"]]]},
+    {d:"ces",items:[["Smoking cessation and alcohol-reduction programmes",["IF","NCI22","TWG13"]]]},
+    {d:"late",items:[["Comorbidity management with primary care: cardiovascular, endocrine, bone, mental health",["IF"]]]},
+    {d:"soc",items:[["Vocational and social reintegration, financial health, ongoing social support and counselling; information on supportive social care (music, art, sports); counselling on protection from discrimination in financial services (national “right to be forgotten” laws)",["IF","TWG3"]]]},
+    {d:"gen",items:[["Peer support continues; registry and outcome data collected",["IF"]],["Special populations: AYA-targeted support; survivors of childhood cancer and their carers receive specialised social counselling at any age",["IF","TWG3"]]]}
+  ],
+  core:["GP (care lead for low risk)","Specialist LTFU team (high risk)","Navigator as safety net"],
+  extra:["Community services","Patient organisations","Peer supporters"],
+  extraLabel:"Community",
+  handover:"Loops back to Step 5 when needs or risk change, and to Steps 1–2 on recurrence or a new primary.",
+  handoverLabel:"Loops back",
+  ex:["Lifelong mammography ordered by the GP; decision on extending endocrine therapy to 10 years","Age-appropriate screening (colorectal, cervical)","Exercise habit maintained, Mediterranean diet, self-management skills, full return to work","Re-entry pathway open; care plan kept in the GP file as lifelong reference"]
+}];
+
+const BANDS = [
+  {k:"b-nav",name:"Navigator",sub:"One named coordinator",cells:["Assigned at first contact","Presents flags at the MDT","Coordinates supportive care","Coordinates the Survivorship Board","Coordinates CCC and GP","Safety net, re-entry triage"]},
+  {k:"b-risk",name:"Risk and needs profile",sub:"Built once, updated over time",cells:["Baseline screen","Treatment-specific risks added","Updated by re-screening and toxicity","Formal stratification: low, intermediate, high","Re-stratified at reassessment","Re-stratified when needs change"]},
+  {k:"b-plan",name:"Survivorship care plan",sub:"One living document",cells:["Survivorship file opened","Planned agents, doses, RT fields","Cumulative doses and toxicities logged","Plan issued to patient and GP","Adapted after each reassessment","Lifelong reference in GP file"]},
+  {k:"b-gp",name:"Primary care",sub:"Involved from the first contact",cells:["GP named and notified","Kept informed","Kept informed","Handover with shared responsibilities","Shared care by risk level","Leads care for low risk"]},
+  {k:"b-peer",name:"Peer support and family",sub:"Runs alongside",cells:["Peer support offered; caregiver to Prevention HUB","Relatives linked to Prevention HUB","Peer support active","Caregiver section in the plan","Ongoing","Ongoing"]}
+];
+
+const MATRIX = [
+  {d:"nav",name:"Navigation",twg:"Pillar across all TWGs",cells:["Intake screen, baseline profile, trial information","Presents survivorship flags","Continuity across services","Coordinates the Survivorship Board","Coordinates CCC and GP","Safety net and re-entry"]},
+  {d:"late",name:"Comorbidities and medical follow-up",twg:"TWG 1",cells:["Comorbidities and comorbidity score, medication plan, CV risk factors, reproductive plans, age","Baseline cardiac, renal and hearing function; baseline DXA; fertility counselling; geriatric assessment","Toxicity monitoring; cumulative dose record","Treatment summary; late-effect map; risk level (TWG 1 risk groups)","Late effects, recurrence and second primaries; CV risk factors; follow-up packages per risk group (in development)","Lifelong LTFU after high-risk exposures; second-cancer screening; comorbidity care with GP"]},
+  {d:"psy",name:"Onco-psychological care",twg:"TWG 2",cells:["Distress Thermometer + Problem List","Psychosocial risks at the MDT; anxiety screen at the treatment decision","Anxiety screen before treatment starts; DT or HADS by phase; counselling, CBT, groups","Full battery: DT, HADS or PHQ-9/GAD-7, FCRI-SF","DT at check-in; FCRI-SF, Body Image Scale; coping with the way back to normal","Mental health and QoL; FCRI-SF at annual review"]},
+  {d:"soc",name:"Occupational, educational, vocational and social care",twg:"TWG 3",cells:["Social needs screening with personal assessment; COST","Social care professional in the MDT (Level 2)","Counselling; household, childcare and travel costs; financial navigation; work-rights information","Social and work plan; rehabilitation access","Follow-up screening; vocational counselling and retraining","Reintegration; financial health; right to be forgotten"]},
+  {d:"nut",name:"Nutrition",twg:"TWG 4 · from malnutrition treatment to healthy eating",cells:["MST or PG-SGA SF","PG-SGA + GLIM; nutrition plan; prehabilitation and ERAS nutrition","Re-screen every cycle or 2–4 weeks; event triggers; GI side effects","Nutritional reassessment; status and re-screen date in the plan","Re-screen for under- and overnutrition; persisting GI effects","Healthy eating and weight; body composition"]},
+  {d:"pa",name:"Physical activity and rehabilitation",twg:"TWG 4 · prehabilitation, exercise, rehabilitation",cells:["STEADI falls screen; SARC-F","6MWT, handgrip, PROM; prehabilitation","Exercise with safety screening; activity on the wards; physiotherapy screen for inpatients","Functional reassessment; rehabilitation need","Activity PROMs; rehabilitation for CIPN, fatigue, surgery-related effects","Regular physical activity"]},
+  {d:"ces",name:"Nicotine and alcohol cessation",twg:"TWG 4",cells:["Smoking history and alcohol use; cessation support offered","Cessation built into the treatment plan","Cessation and alcohol-reduction programmes","Prevention prescription in the plan","Status reviewed; relapse support; programmes started","Cessation programmes; status reviewed"]}
+];
+
+const CARDS = [
+  {h:"Survivorship begins at diagnosis",p:"Task 8.2.7 agreed this definition by consensus, and IF-SurvHub adopts it in line with NCCN and ESMO. Only <strong>24%</strong> of surveyed centres use it today.",src:["IF","NCCNG","VAZ22","JANE2RS"]},
+  {h:"Late-effect prevention starts before treatment",p:"Baseline cardiovascular risk and echocardiography before potentially cardiotoxic therapy, baseline bone density when aromatase inhibitors, ovarian suppression or androgen deprivation start, and fertility counselling before gonadotoxic treatment, with referral for preservation. These baselines are most useful when the team that reads them at follow-up finds them in the same file.",src:["LYON22","COLE20","SU25"]},
+  {h:"The treatment summary is built during treatment",p:"Cumulative doses, RT fields and complications are the core of the care plan and of risk stratification. They have to be captured as treatment happens, in the same record that follow-up will use.",src:["IF","MAYE14"]},
+  {h:"End of treatment is where care fragments",p:"TWG 2 calls it the most under-screened moment, and JANE-2 links poor handovers to survivors lost to follow-up. In the CUSL Brussels paediatric cohort treated in 2010–2021, <strong>47%</strong> of surviving patients attended a first long-term follow-up visit; among brain tumour survivors who did not attend, <strong>two thirds</strong> were followed by other specialists outside the LTFU clinic. The HUB is designed to hold this transition.",src:["TWG2S","JANE2RS","CUSL"]},
+  {h:"One coordinator, one dynamic risk profile",p:"JANE-2 recommends a designated coordinator who keeps continuity throughout the survivorship journey, and risk stratification that is continuously reviewed and updated.",src:["JANE2CO","JANE2RS"]},
+  {h:"One pathway addresses fragmentation",p:"Navigators at <strong>44%</strong> of the 36 surveyed centres, primary care coordination at <strong>33%</strong>, care plans scheduled at <strong>42%</strong>. Current follow-up models do not meet survivors’ needs; a single pathway addresses these gaps without adding a new handover.",src:["IF","JEFF22"]}
+];
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]));
+const tag = k => { const r = REFS[k]; return r ? `<span class="tag t-${r.t}" title="${esc(r.c)}">${esc(r.tag)}</span>` : ""; };
+const tags = a => (a||[]).map(tag).join("");
+const PROP_TIP = "Placed at this step by this overview (from guidelines, JANE-2 or by analogy with TWG material); open for review by the TWG that owns the domain, or by the task team for cross-cutting items";
+const prop = () => `<span class="prop" title="${PROP_TIP}">proposed</span>`;
+const chip = (c, cls) => c.endsWith(" (proposed)") ? `<span class="chip ${cls}">${esc(c.replace(" (proposed)",""))} ${prop()}</span>` : `<span class="chip ${cls}">${esc(c)}</span>`;
+
+/* Pathway map */
+function buildMap(){
+  let h = `<div class="corner" style="align-self:center">Phase</div>
+    <div class="phase ph-a" style="grid-column:2 / 5"><b>${PHASE.a} ${tags(["PHASES"])}</b><small>From primary diagnosis through active treatment: needs assessed at diagnosis, end of active treatment, progression or every 3–6 months</small></div>
+    <div class="phase ph-b" style="grid-column:5 / 6"><b>End of primary treatment</b><small>Closes the acute phase, opens the next</small></div>
+    <div class="phase ph-e" style="grid-column:6 / 8"><b>${PHASE.e} ${tags(["PHASES"])}</b><small>JANE-2 risk-stratified follow-up; risk classification developed and validated</small></div>`;
+  h += `<div class="corner">Step</div><div class="rail" aria-hidden="true">${STEPS.map(s=>`<span class="${s.crit?"crit":""}"></span>`).join("")}</div>`;
+  h += `<div class="corner" style="align-self:start;padding-top:12px">Select a step</div>`;
+  h += STEPS.map((s,i)=>`<button class="station ${s.crit?"crit":""}" data-i="${i}" aria-label="Open step ${s.n}: ${esc(s.name)}">
+      ${s.crit?`<span class="flag">Care plan + risk level</span>`:""}
+      <span class="num">Step ${s.n}</span><span class="nm">${esc(s.name)}</span>
+      <span class="tm">${esc(s.timing.split(" · ")[0])}</span>
+      <span class="q">${esc(s.q)}</span><span class="open">Open detail →</span></button>`).join("");
+  BANDS.forEach(b=>{
+    h += `<div class="blabel ${b.k}"><b><i></i>${esc(b.name)}</b><small>${esc(b.sub)}</small></div>`;
+    h += b.cells.map((c,i)=>`<div class="seg ${b.k} ${STEPS[i].crit?"crit":""}">${esc(c)}</div>`).join("");
+  });
+  $("#map").innerHTML = h;
+  $("#map").querySelectorAll(".station").forEach(el=>el.addEventListener("click",()=>openStep(+el.dataset.i)));
+  $("#legend").innerHTML = `<span class="lg">${tag("IF")} task framework</span><span class="lg">${tag("TWG2S")} TWG input</span><span class="lg">${tag("JANE2RS")} JANE-2</span><span class="lg">${tag("CUSL")} teaming talk</span><span class="lg">${tag("LYON22")} guideline or article</span><span class="lg">${prop()} placed here by this overview; open for TWG review</span>`;
+}
+
+/* Domains table */
+function buildMatrix(){
+  let h = `<thead><tr class="phr"><th></th><th colspan="3" class="ph-a">${PHASE.a}</th><th class="ph-b">Bridge</th><th colspan="2" class="ph-e">${PHASE.e}</th></tr><tr><th scope="col">Domain</th>${STEPS.map((s,i)=>`<th scope="col" class="${s.crit?"crit":""}"><button data-i="${i}"><span>Step ${s.n}</span>${esc(s.name)}</button></th>`).join("")}</tr></thead><tbody>`;
+  h += MATRIX.map(r=>`<tr style="--dc:${DOM[r.d].c}"><th scope="row"><b>${esc(r.name)}</b><small>${esc(r.twg)}</small></th>${r.cells.map((c,i)=>`<td class="${STEPS[i].crit?"crit":""}">${esc(c)}</td>`).join("")}</tr>`).join("");
+  $("#dtable").innerHTML = h + "</tbody>";
+  $("#dtable").querySelectorAll("thead button").forEach(b=>b.addEventListener("click",()=>openStep(+b.dataset.i)));
+  $("#dtable").querySelectorAll("tbody tr").forEach(tr=>{
+    tr.addEventListener("mouseenter",()=>tr.classList.add("hl"));
+    tr.addEventListener("mouseleave",()=>tr.classList.remove("hl"));
+  });
+}
+
+function buildCards(){
+  $("#cards").innerHTML = CARDS.map(c=>`<article class="card"><h3>${esc(c.h)}</h3><p>${c.p}</p><div>${tags(c.src)}</div></article>`).join("");
+}
+
+function buildRefs(){
+  const groups = {};
+  Object.entries(REFS).forEach(([k,r])=>{ (groups[r.g] = groups[r.g] || []).push(r); });
+  $("#reflist").innerHTML = Object.entries(groups).map(([g,rs])=>`<div class="refgrp"><h4>${esc(g)}</h4><ol>${rs.map(r=>`<li><b>${esc(r.tag)}</b> ${esc(r.c)}</li>`).join("")}</ol></div>`).join("");
+}
+
+/* Drawer */
+let cur = -1, lastFocus = null;
+function riskBlock(){
+  return `<div class="dsec"><h3>Risk stratification</h3>
+  <p class="purpose">The Survivorship Board assigns follow-up intensity from tumour biology, treatment exposures, comorbidity, psychosocial risk and social determinants ${tags(["IF"])}. TWG 1 is defining the medical risk groups (e.g. unimodal, multimodal and high-risk treatment such as stem cell transplantation, as in the German LE-Na project), assigned at the end of treatment and used to trigger follow-up templates ${tags(["TWG12"])}. The JANE-2 draft below shows how three levels can set the follow-up setting and the care lead ${tags(["JANE2RS"])}${prop()}; the two will be aligned.</p>
+  <div class="tbl-wrap"><table class="risk"><thead><tr><th>Level</th><th>Typical profile</th><th>Follow-up setting</th><th>Care lead</th></tr></thead><tbody>
+  <tr><td class="lvl">Low</td><td data-l="Typical profile">Early-stage disease, standard low-intensity therapy, low anticipated late-effect risk (e.g. selected breast, colorectal or prostate cancer survivors); stable comorbidities</td><td data-l="Follow-up setting">Supported self-management in primary care</td><td data-l="Care lead">GP, supported by specialised oncology nursing</td></tr>
+  <tr><td class="lvl">Intermediate</td><td data-l="Typical profile">Less common adult or childhood-onset cancers; later-stage disease; multimodal therapy; treatment-related comorbidities or late effects; childhood cancer survivors treated with systemic chemotherapy without radiotherapy (e.g. leukaemia, lymphoma without RT)</td><td data-l="Follow-up setting">Shared care between oncology and primary care</td><td data-l="Care lead">Oncologist and a designated GP with survivorship interest</td></tr>
+  <tr><td class="lvl">High</td><td data-l="Typical profile">High-risk or complex regimens including radiotherapy, HSCT or CAR-T; CNS tumours; childhood cancer survivors</td><td data-l="Follow-up setting">Specialist long-term follow-up service</td><td data-l="Care lead">Specialist multidisciplinary team with mandatory GP co-management</td></tr>
+  </tbody></table></div>
+  <p class="caveat">The profile is holistic and dynamic: psychosocial needs, health literacy, functional status, self-management confidence and preferences count, and the level is reviewed over time ${tags(["JANE2CO","JANE2RS"])}. IF-SurvHub v2 uses low, medium and high; JANE-2 uses low, intermediate and high. Which radiotherapy exposures count as high risk is to be defined with TWG 1.</p>
+  <p class="caveat">In the British Childhood Cancer Survivor Study, the cumulative risk of a serious adverse outcome (subsequent neoplasm, non-neoplastic death or severe chronic condition) by 45 years from diagnosis was 21%, 45% and 69% for NCSI levels 1, 2 and 3, leukaemia survivors excluded ${tags(["FROB17"])}. The JANE-2 framework rests on clinical experience and literature, agreed by expert consensus without a formal method such as Delphi; developing and validating risk stratification tools for adult survivors is a gap EUnetCCC can address ${tags(["JANE2RS","JANE2CO"])}.</p></div>`;
+}
+function pscpBlock(){
+  const items = [
+    ["Treatment summary: diagnosis, stage, pathology and biomarkers, systemic agents and cumulative doses, surgery, RT fields and dose, complications",["IF","MAYE14","TWG12"]],
+    ["Risk level with follow-up setting and care lead",["IF","JANE2RS"]],
+    ["Personalised follow-up schedule: tumour-specific surveillance and general health maintenance",["IF"]],
+    ["Late-effect monitoring: therapy-specific risks with triggers and referral pathways",["IF"]],
+    ["Red-flag symptoms and safety net, with contacts",["IF"]],
+    ["Lifestyle and prevention prescription; link to the Prevention HUB",["IF"]],
+    ["Psychosocial and mental health plan, with referral thresholds",["IF"]],
+    ["School, work and social functioning; financial benefits guidance",["IF"]],
+    ["Reproductive and sexual health: fertility follow-up, pregnancy timing, sexual function support",["IF"]],
+    ["Primary care handover: named GP and shared-care responsibilities",["IF"]],
+    ["Clinical trials pathway and re-screening instructions",["IF"]],
+    ["Caregiver health and prevention section; pocket guide for patient and GP",["IF"]],
+    ["Nutritional status and next re-screening date",["TWG11N"]]
+  ];
+  return `<div class="dsec"><h3>Personalised survivorship care plan</h3><ul class="pscp">${items.map(([t,s,p])=>`<li>${esc(t)} ${tags(s)}${p?prop():""}</li>`).join("")}</ul></div>`;
+}
+function openStep(i){
+  if(i<0||i>=STEPS.length) return;
+  if(cur<0) lastFocus = document.activeElement;
+  cur = i; const s = STEPS[i];
+  $("#dNum").textContent = `Step ${s.n} of 6`;
+  $("#dTitle").textContent = s.name;
+  $("#dTime").textContent = s.timing;
+  $("#dPhase").innerHTML = `<span class="phchip ph-${s.ph}">${esc(PHASE[s.ph])}</span>`;
+  const used = new Set();
+  const u = a => (a||[]).forEach(k=>used.add(k));
+  let b = `<p class="kq">${esc(s.q)}</p><p class="purpose">${esc(s.purpose)}</p>`;
+  b += `<div class="dsec"><h3>${esc(s.screenTitle)}</h3><div class="tbl-wrap"><table class="st"><thead><tr><th>Domain</th><th>Tool or assessment</th><th>Threshold or trigger</th><th>Who</th></tr></thead><tbody>`;
+  b += s.screen.map(r=>{ u(r.src); return `<tr style="--dc:${DOM[r.d].c}"><td class="dom"><i></i>${esc(DOM[r.d].n)}</td><td>${esc(r.tool)} ${tags(r.src)}${r.p?prop():""}</td><td data-l="Threshold or trigger"><span class="thr">${esc(r.thr)}</span></td><td data-l="Who">${esc(r.who)}</td></tr>`; }).join("");
+  b += `</tbody></table></div></div>`;
+  if(s.risk){ b += riskBlock(); ["IF","TWG12","JANE2RS","JANE2CO","FROB17"].forEach(k=>used.add(k)); }
+  if(s.pscp){ b += pscpBlock(); ["IF","MAYE14","TWG12","JANE2RS","TWG11N"].forEach(k=>used.add(k)); }
+  b += `<div class="dsec"><h3>Survivorship actions at this step</h3>`;
+  b += s.actions.map(g=>`<div class="agrp" style="--dc:${DOM[g.d].c}"><div class="dn"><i></i>${esc(DOM[g.d].n)}</div><ul>${g.items.map(([t,src,p])=>{u(src);return `<li>${esc(t)} ${tags(src)}${p?prop():""}</li>`;}).join("")}</ul></div>`).join("");
+  b += `</div>`;
+  b += `<div class="dsec"><h3>Who is needed</h3><div class="people"><div><h4>Core</h4><div class="chips">${s.core.map(c=>chip(c,"core")).join("")}</div></div><div><h4>${esc(s.extraLabel)}</h4><div class="chips">${s.extra.map(c=>chip(c,"")).join("")}</div></div></div></div>`;
+  const nextLabel = s.handoverLabel || `Hands over to Step ${s.n+1}: ${STEPS[i+1] ? STEPS[i+1].name : ""}`;
+  b += `<div class="dsec"><div class="handover"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg><div><b>${esc(nextLabel)}</b>${esc(s.handover)}</div></div></div>`;
+  b += `<div class="dsec"><details class="example"><summary>Worked example: woman, 47, stage IIA breast cancer (fictional case from IF-SurvHub)</summary><ul>${s.ex.map(m=>`<li>${esc(m)}</li>`).join("")}</ul></details></div>`;
+  used.add("IF");
+  b += `<div class="dsec"><h3>Sources for this step</h3><ol class="srcs">${[...used].filter(k=>REFS[k]).map(k=>`<li>${esc(REFS[k].c)}</li>`).join("")}</ol></div>`;
+  $("#dBody").innerHTML = b; $("#dBody").scrollTop = 0;
+  $("#pips").innerHTML = STEPS.map((x,j)=>`<button class="pip ${x.crit?"crit":""}" data-i="${j}" ${j===i?'aria-current="step"':""} aria-label="Step ${x.n}: ${esc(x.name)}">${x.n}</button>`).join("");
+  $("#pips").querySelectorAll(".pip").forEach(p=>p.addEventListener("click",()=>openStep(+p.dataset.i)));
+  $("#prev").disabled = i===0; $("#next").disabled = i===STEPS.length-1;
+  $("#drawer").hidden = false; $("#scrim").hidden = false;
+  document.body.style.overflow = "hidden";
+  try{ history.replaceState(null,"","#step"+s.n); }catch(e){}
+  $("#close").focus({preventScroll:true});
+}
+function closeStep(){
+  $("#drawer").hidden = true; $("#scrim").hidden = true; document.body.style.overflow = "";
+  cur = -1;
+  try{ history.replaceState(null,"",location.pathname + location.search); }catch(e){}
+  if(lastFocus && lastFocus.focus) lastFocus.focus({preventScroll:true});
+}
+$("#close").addEventListener("click",closeStep);
+$("#scrim").addEventListener("click",closeStep);
+$("#prev").addEventListener("click",()=>openStep(cur-1));
+$("#next").addEventListener("click",()=>openStep(cur+1));
+document.addEventListener("keydown",e=>{
+  if(cur<0) return;
+  if(e.key==="Escape") closeStep();
+  else if(e.key==="ArrowRight") openStep(cur+1);
+  else if(e.key==="ArrowLeft") openStep(cur-1);
+});
+
+/* Tabs */
+const TABS = [["tab-pathway","view-pathway"],["tab-domains","view-domains"],["tab-why","view-why"]];
+function showTab(id){
+  TABS.forEach(([t,v])=>{ const on = t===id; $("#"+t).setAttribute("aria-selected",on); $("#"+v).hidden = !on; });
+}
+TABS.forEach(([t])=>$("#"+t).addEventListener("click",()=>showTab(t)));
+
+buildMap(); buildMatrix(); buildCards(); buildRefs();
+(function(){
+  const h = (location.hash||"").replace("#","");
+  const m = h.match(/^step([1-6])$/);
+  if(m) openStep(+m[1]-1);
+  else if(h==="domains") showTab("tab-domains");
+  else if(h==="why") showTab("tab-why");
+})();
+</script>
+
+</body></html>
